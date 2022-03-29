@@ -1,0 +1,22 @@
+{
+  "name": "leanpub-reservations-create-reservation",
+  "version": "1.0.0",
+  "description": "Lambda for creating a new reservation",
+  "scripts": {
+    "clean": "rm -rf node_modules && rm -rf dist",
+    "webpack": "webpack",
+    "zip": "cd dist && zip -r create.zip *",
+    "build": "npm i && webpack && npm run zip",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "fp-ts": "^2.8.3",
+    "fp-ts-std": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "aws-sdk": "2.828.0"
+  },
+  "author": "Sam Van Overmeire",
+  "license": "ISC"
+}

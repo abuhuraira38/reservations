@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Handler: main.handler
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DATABASE_NAME: !Ref ReservationsDb
+
+Resources:
+  CreateLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 512
+      Timeout: 15
+      CodeUri: lambdas/create/dist/create.zip
+      Policies:
+        - AWSLambdaExecute
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource:
+                - "*"
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /create
+            Method: POST
+            RestApiId: !Ref ServerlessRestApi
+  RetrieveLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 512
+      Timeout: 15
+      CodeUri: lambdas/retrieve/dist/retrieve.zip
+      Policies:
+        - AWSLambdaExecute
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:*"
+              Resource:
+                - "*"
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /retrieve
+            Method: GET
+            RestApiId: !Ref ServerlessRestApi
+
+  ServerlessRestApi:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: "Retain"
+    Properties:
+      StageName: Prod
+
+  ReservationsDb:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: hashKey
+          AttributeType: S
+        - AttributeName: rangeKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hashKey
+          KeyType: HASH
+        - AttributeName: rangeKey
+          KeyType: RANGE
+
+Outputs:
+  ApiGatewayUrl:
+    Description: "API Prod stage endpoint"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
